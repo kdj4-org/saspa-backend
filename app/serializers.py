@@ -8,17 +8,23 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class UsuarioSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     class Meta:
         model = Usuario
-        fields = ['id', 'email', 'nombre', 'telefono', 'url_foto', 'rol', 'is_active']
+        fields = ['id', 'email', 'nombre', 'telefono', 'url_foto', 'rol', 'password','is_active']
         extra_kwargs = {
             'password': {'write_only': True},
             'is_active': {'read_only': True}
         }
 
     def create(self, validated_data):
+        password = validated_data.pop('password')
+        return Usuario.objects.create_user(**validated_data, password=password)
+
+    def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
+        for (key, value) in validated_data.items():
+            setattr(instance, key, value)
         if password is not None:
             instance.set_password(password)
         instance.save()
