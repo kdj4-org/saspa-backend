@@ -11,7 +11,7 @@ DEBUG = config('DEBUG', default=False)
 
 JWT_SECRET_KEY = config('JWT_SECRET_KEY')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', config('PROD_DOMAIN', default=""), config('DEV_DOMAIN', default="")]
 
 
 # Application definition
@@ -109,27 +109,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000", 
+    "http://127.0.0.1:3000",
+    config('FRONTEND_PROD_DOMAIN', default=""),
+    config('FRONTEND_DEV_DOMAIN', default=""),
 ]
-
-
-if DEBUG:
-    ALLOWED_HOSTS.extend([
-        '0.0.0.0',
-    ])
-    
-    dev_frontend = config("DEV_FRONTEND_URL", default="")
-    if dev_frontend and dev_frontend not in CORS_ALLOWED_ORIGINS:
-        CORS_ALLOWED_ORIGINS.append(dev_frontend)
-else:
-    prod_frontend = config("PROD_FRONTEND_URL", default="")
-    prod_domain = config("PROD_DOMAIN", default="")
-    
-    if prod_frontend:
-        CORS_ALLOWED_ORIGINS.append(prod_frontend)
-    
-    if prod_domain:
-        ALLOWED_HOSTS.extend([
-            prod_domain,
-            f"www.{prod_domain}",
-        ])
