@@ -15,7 +15,7 @@ router.register(r'notificaciones', views.NotificacionViewSet)
 router.register(r'feedbacks', views.FeedbackViewSet)
 
 sede_list = views.SedeViewSet.as_view({
-	'get': 'list',
+    'get': 'list',
     'post': 'create'
 })
 
