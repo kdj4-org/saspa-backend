@@ -14,6 +14,10 @@ router.register(r'publicaciones', views.PublicacionViewSet)
 router.register(r'notificaciones', views.NotificacionViewSet)
 router.register(r'feedbacks', views.FeedbackViewSet)
 
+sede_read = views.SedeViewSet.as_view({
+    'get': 'list'
+})
+
 sede_list = views.SedeViewSet.as_view({
     'get': 'list',
     'post': 'create'
@@ -28,6 +32,7 @@ urlpatterns = [
     #path('', include(router.urls)),    
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
+    path('usuario/sedes/', sede_read, name='usuario-sedes'),
     path('admin/sedes/', sede_list, name='admin-sedes-list'),
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
 ]
