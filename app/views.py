@@ -76,7 +76,15 @@ class ServicioViewSet(viewsets.ModelViewSet):
 
 class SedeViewSet(viewsets.ModelViewSet):
     queryset = Sede.objects.all()
-    serializer_class = SedeSerializer    
+    serializer_class = SedeSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"mensaje": "Sede eliminada correctamente."},
+            status=status.HTTP_200_OK
+        ) 
 
 class EmpleadoViewSet(viewsets.ModelViewSet):
     queryset = Empleado.objects.all()
