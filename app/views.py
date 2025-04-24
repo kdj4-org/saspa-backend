@@ -72,34 +72,23 @@ class LoginView(APIView):
 
 class ServicioViewSet(viewsets.ModelViewSet):
     queryset = Servicio.objects.all()
-    serializer_class = ServicioSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    serializer_class = ServicioSerializer    
 
 class SedeViewSet(viewsets.ModelViewSet):
     queryset = Sede.objects.all()
-    serializer_class = SedeSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    serializer_class = SedeSerializer    
 
 class EmpleadoViewSet(viewsets.ModelViewSet):
     queryset = Empleado.objects.all()
-    serializer_class = EmpleadoSerializer
-    permission_classes = [IsAdmin]
+    serializer_class = EmpleadoSerializer    
 
 class EmpleadoServicioViewSet(viewsets.ModelViewSet):
     queryset = EmpleadoServicio.objects.all()
-    serializer_class = EmpleadoServicioSerializer
-    permission_classes = [IsAdmin]
+    serializer_class = EmpleadoServicioSerializer    
 
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
     serializer_class = CitaSerializer
-    
-    def get_permissions(self):
-        if self.action in ['create', 'list', 'retrieve']:
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [IsOwnerOrAdmin | IsAdmin]
-        return [permission() for permission in permission_classes]
     
     def get_queryset(self):
         user = self.request.user
@@ -109,14 +98,14 @@ class CitaViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(usuario=user)
         return self.queryset.none()
     
-    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
+    @action(detail=True, methods=['post'])
     def aprobar(self, request, pk=None):
         cita = self.get_object()
         cita.estado = 'aprobada'
         cita.save()
         return Response({'status': 'cita aprobada'})
     
-    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
+    @action(detail=True, methods=['post'])
     def rechazar(self, request, pk=None):
         cita = self.get_object()
         cita.estado = 'rechazada'
@@ -126,28 +115,18 @@ class CitaViewSet(viewsets.ModelViewSet):
 class DisponibilidadViewSet(viewsets.ModelViewSet):
     queryset = Disponibilidad.objects.all()
     serializer_class = DisponibilidadSerializer
-    permission_classes = [IsAdmin]
 
 class BloqueoViewSet(viewsets.ModelViewSet):
     queryset = Bloqueo.objects.all()
     serializer_class = BloqueoSerializer
-    permission_classes = [IsAdmin]
 
 class PublicacionViewSet(viewsets.ModelViewSet):
     queryset = Publicacion.objects.all()
     serializer_class = PublicacionSerializer
-    permission_classes = [IsAdminOrReadOnly]
 
 class NotificacionViewSet(viewsets.ModelViewSet):
     queryset = Notificacion.objects.all()
     serializer_class = NotificacionSerializer
-    
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'update', 'partial_update']:
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.IsAdminUser]
-        return [permission() for permission in permission_classes]
     
     def get_queryset(self):
         user = self.request.user
@@ -158,7 +137,6 @@ class NotificacionViewSet(viewsets.ModelViewSet):
 class FeedbackViewSet(viewsets.ModelViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         user = self.request.user
