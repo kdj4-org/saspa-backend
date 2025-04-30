@@ -80,10 +80,13 @@ class Servicio(models.Model):
 
 class Sede(models.Model):
     direccion = models.CharField(max_length=255)
+    barrio = models.CharField(max_length=100, null=True)
     ciudad = models.CharField(max_length=100)
+    horario = models.CharField(max_length=100, null=True)
+    url_imagen = models.URLField(null=True)
 
     def __str__(self):
-        return f"{self.direccion}, {self.ciudad}"
+        return f"{self.direccion} - {self.barrio}, {self.ciudad} tiene el horario {self.horario}"
 
 
 class Empleado(models.Model):
@@ -144,6 +147,7 @@ class Bloqueo(models.Model):
 class Publicacion(models.Model):
     url_imagen = models.URLField()
     fecha = models.DateField()
+    servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE)
 
 
 class Notificacion(models.Model):
