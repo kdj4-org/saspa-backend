@@ -3,7 +3,8 @@ from .models import (
     Usuario, Servicio, Sede, Empleado, EmpleadoServicio,
     Cita, Disponibilidad, Bloqueo, Publicacion, Notificacion, Feedback
 )
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 User = get_user_model()
 
@@ -30,6 +31,28 @@ class UsuarioSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    new_password = serializers.CharField(min_length=6, required=True, write_only=True, style={'input_type': 'password'})
+    confirm_new_password = serializers.CharField(min_length=6, required=True, write_only=True, style={'input_type': 'password'})
+
+    def validate(self, data):
+        if data['new_password'] != data.get('confirm_new_password'):
+            raise serializers.ValidationError({"confirm_new_password": "Las contraseñas no coinciden."})
+        
+        user = self.context.get('user')
+        if not user:
+            raise serializers.ValidationError("Error interno del servidor al validar la contraseña.")
+        
+        try:
+            password_validation.validate_password(data['new_password'], user=user)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({"new_password", list(e.messages)})
+        
+        return data
 
 class ServicioSerializer(serializers.ModelSerializer):
     class Meta:

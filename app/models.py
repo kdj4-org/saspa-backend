@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
+import uuid
 
 class UserManager(BaseUserManager):
     def create_user(self, email, nombre, password=None, rol='cliente', **extra_fields):
@@ -67,6 +69,18 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre} ({self.rol})"
+
+class PasswordResetToken(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_valid(self):
+        return self.expires_at > timezone.now()
+    
+    def __str__(self):
+        return f"Token de recuperación para: {self.usuario.email}"
 
 class Servicio(models.Model):
     nombre = models.CharField(max_length=255)
