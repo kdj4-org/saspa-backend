@@ -33,6 +33,8 @@ urlpatterns = [
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
     path('usuario/sedes/', sede_read, name='usuario-sedes'),
+    path('usuario/recuperar-contrasena/', views.PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('usuario/restablecer-contrasena/<uuid:token>/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),    
     path('admin/sedes/', sede_list, name='admin-sedes-list'),
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
 ]

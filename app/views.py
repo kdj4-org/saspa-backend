@@ -7,20 +7,26 @@ from django.contrib.auth import get_user_model
 from .models import (
     Servicio, Sede, Empleado, EmpleadoServicio,
     Cita, Disponibilidad, Bloqueo, Publicacion, 
-    Notificacion, Feedback
+    Notificacion, Feedback, PasswordResetToken
 )
 from .serializers import (
     UsuarioSerializer, ServicioSerializer, SedeSerializer,
     EmpleadoSerializer, EmpleadoServicioSerializer, CitaSerializer,
     DisponibilidadSerializer, BloqueoSerializer, PublicacionSerializer,
-    NotificacionSerializer, FeedbackSerializer
+    NotificacionSerializer, FeedbackSerializer, PasswordResetRequestSerializer, 
+    PasswordResetConfirmSerializer
 )
 from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin, IsAdmin
 from datetime import datetime, timedelta, timezone
+from django.utils import timezone as tz
 import jwt
 from django.conf import settings
+from django.urls import reverse
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 User = get_user_model()
+EXPIRY_MINUTES = 30
 
 class RegisterUserView(APIView):
     def post(self, request):
@@ -69,6 +75,71 @@ class LoginView(APIView):
         except User.DoesNotExist:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)        
 
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            try:
+                user = User.objects.get(email=email)
+                token = PasswordResetToken.objects.create(
+                    usuario=user,
+                    expires_at=tz.now() + timedelta(minutes=EXPIRY_MINUTES)                    
+                )
+                reset_url = reverse('password-reset-confirm', kwargs={'token': str(token.token)})
+                full_reset_url = request.build_absolute_uri(reset_url)
+
+                expiry_minutes = EXPIRY_MINUTES
+                site_name = getattr(settings, 'SITE_NAME', 'Tu Aplicación')
+
+                context = {
+                    'user': user,
+                    'reset_url': full_reset_url,
+                    'expiry_minutes': expiry_minutes,
+                    'site_name': site_name,
+                }
+
+                subject = render_to_string('emails/password_reset_subject.txt', context).strip()
+                text_body = render_to_string('emails/password_reset_body.txt', context)
+                html_body = render_to_string('emails/password_reset_body.html', context)
+
+                try:
+                    email_message = EmailMultiAlternatives(
+                        subject=subject,
+                        body=text_body,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[user.email],
+                    )
+                    email_message.attach_alternative(html_body, "text/html")
+                    email_message.send(fail_silently=False)
+                
+                except Exception as e:
+                    print("Error al enviar correo electrónico de restablecimiento de contraseña:", e)
+                    pass
+                return Response({'message': 'Se ha enviado un enlace de recuperación a tu correo electrónico si la cuenta existe.'}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:                
+                return Response({'message': 'Se ha enviado un enlace de recuperación a tu correo electrónico si la cuenta existe.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class PasswordResetConfirmView(APIView):
+    def post(self, request, token):    
+        try:
+            password_reset_token = PasswordResetToken.objects.get(token=token)
+            if not password_reset_token.is_valid():
+                return Response({'error': 'El enlace de restablecimiento es inválido o ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = password_reset_token.usuario
+            serializer = PasswordResetConfirmSerializer(data=request.data, context={'user': user})
+            if serializer.is_valid():
+                new_password = serializer.validated_data['new_password']
+                user.set_password(new_password)
+                user.save()
+                password_reset_token.delete()
+                return Response({'message': 'Tu contraseña ha sido restablecida exitosamente.'}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PasswordResetToken.DoesNotExist:
+            return Response({'error': 'El enlace de restablecimiento es inválido.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class ServicioViewSet(viewsets.ModelViewSet):
     queryset = Servicio.objects.all()
