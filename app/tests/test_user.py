@@ -10,7 +10,7 @@ Usuario = get_user_model()
 
 class RegisterUserViewTest(APITestCase):
     def test_register_user_success(self):
-        url = reverse('register')  # Asegúrate de que esta sea la URL correcta para tu vista
+        url = reverse('register')
         data = {
             'email': 'test@example.com',
             'nombre': 'Test User',
@@ -27,12 +27,10 @@ class RegisterUserViewTest(APITestCase):
         self.assertEqual(response.data['user']['rol'], 'cliente')
         self.assertIsNotNone(response.data['access'])
 
-        # Verificar que el usuario se creó en la base de datos
         self.assertTrue(Usuario.objects.filter(email=data['email']).exists())
         user = Usuario.objects.get(email=data['email'])
         self.assertTrue(user.check_password(data['password']))
 
-        # Verificar la estructura del token (sin validar el contenido completo)
         token = response.data['access'].split(' ')[1]
         self.assertIsNotNone(token)
         try:
@@ -106,7 +104,7 @@ class LoginViewTest(APITestCase):
             'password': 'loginpassword'
         }
         self.user = Usuario.objects.create_user(**self.user_data)
-        self.login_url = reverse('login') # Asegúrate de que esta sea la URL correcta para tu vista
+        self.login_url = reverse('login')
 
     def test_login_success(self):
         data = {
@@ -122,7 +120,6 @@ class LoginViewTest(APITestCase):
         self.assertEqual(response.data['user']['rol'], 'cliente')
         self.assertIsNotNone(response.data['access'])
 
-        # Verificar la estructura del token
         token = response.data['access'].split(' ')[1]
         self.assertIsNotNone(token)
         try:
