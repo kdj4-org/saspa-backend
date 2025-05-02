@@ -59,6 +59,15 @@ class ServicioSerializer(serializers.ModelSerializer):
         model = Servicio
         fields = '__all__'
 
+    def validate_name(self, value):
+        if self.instance:
+            if Servicio.objects.exclude(pk=self.instance.pk).filter(nombre=value).exists():
+                raise serializers.ValidationError("Ya existe un servicio con ese nombre.")
+        else:
+            if Servicio.objects.filter(nombre=value).exists():
+                raise serializers.ValidationError("Ya existe un servicio con ese nombre.")
+        return value
+
 class SedeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sede

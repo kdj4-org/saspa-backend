@@ -3,16 +3,6 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-#router.register(r'usuarios', views.UsuarioViewSet)
-router.register(r'servicios', views.ServicioViewSet)
-router.register(r'empleados', views.EmpleadoViewSet)
-router.register(r'empleados-servicios', views.EmpleadoServicioViewSet)
-router.register(r'citas', views.CitaViewSet)
-router.register(r'disponibilidades', views.DisponibilidadViewSet)
-router.register(r'bloqueos', views.BloqueoViewSet)
-router.register(r'publicaciones', views.PublicacionViewSet)
-router.register(r'notificaciones', views.NotificacionViewSet)
-router.register(r'feedbacks', views.FeedbackViewSet)
 
 sede_read = views.SedeViewSet.as_view({
     'get': 'list'
@@ -28,8 +18,16 @@ sede_detail = views.SedeViewSet.as_view({
     'delete': 'destroy'
 })
 
-urlpatterns = [
-    #path('', include(router.urls)),    
+servicio_list = views.ServicioViewSet.as_view({
+    'post': 'create'
+})
+
+servicio_detail = views.ServicioViewSet.as_view({
+    'put': 'update',
+    'delete': 'destroy'
+})
+
+urlpatterns = [  
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
     path('usuario/sedes/', sede_read, name='usuario-sedes'),
@@ -37,4 +35,6 @@ urlpatterns = [
     path('usuario/restablecer-contrasena/<uuid:token>/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),    
     path('admin/sedes/', sede_list, name='admin-sedes-list'),
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
+    path('admin/servicios/', servicio_list, name='admin-servicios-list'),
+    path('admin/servicios/<int:pk>/', servicio_detail, name='admin-servicios-detail'),
 ]
