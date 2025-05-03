@@ -20,18 +20,18 @@ class RegisterUserViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('message', response.data)
         self.assertEqual(response.data['message'], 'User registered successfully')
-        self.assertIn('access', response.data)
+        self.assertIn('Authorization', response.data)
         self.assertIn('user', response.data)
         self.assertEqual(response.data['user']['email'], data['email'])
         self.assertEqual(response.data['user']['nombre'], data['nombre'])
         self.assertEqual(response.data['user']['rol'], 'cliente')
-        self.assertIsNotNone(response.data['access'])
+        self.assertIsNotNone(response.data['Authorization'])
 
         self.assertTrue(Usuario.objects.filter(email=data['email']).exists())
         user = Usuario.objects.get(email=data['email'])
         self.assertTrue(user.check_password(data['password']))
 
-        token = response.data['access'].split(' ')[1]
+        token = response.data['Authorization'].split(' ')[1]
         self.assertIsNotNone(token)
         try:
             jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=['HS256'])
@@ -113,14 +113,14 @@ class LoginViewTest(APITestCase):
         }
         response = self.client.post(self.login_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+        self.assertIn('Authorization', response.data)
         self.assertIn('user', response.data)
         self.assertEqual(response.data['user']['email'], self.user_data['email'])
         self.assertEqual(response.data['user']['nombre'], self.user_data['nombre'])
         self.assertEqual(response.data['user']['rol'], 'cliente')
-        self.assertIsNotNone(response.data['access'])
+        self.assertIsNotNone(response.data['Authorization'])
 
-        token = response.data['access'].split(' ')[1]
+        token = response.data['Authorization'].split(' ')[1]
         self.assertIsNotNone(token)
         try:
             payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=['HS256'])
@@ -141,7 +141,7 @@ class LoginViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertEqual(response.data['error'], 'Invalid credentials')
-        self.assertNotIn('access', response.data)
+        self.assertNotIn('Authorization', response.data)
         self.assertNotIn('user', response.data)
 
     def test_login_invalid_credentials_user_not_found(self):
@@ -153,7 +153,7 @@ class LoginViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertEqual(response.data['error'], 'Invalid credentials')
-        self.assertNotIn('access', response.data)
+        self.assertNotIn('Authorization', response.data)
         self.assertNotIn('user', response.data)
 
     def test_login_missing_email(self):
