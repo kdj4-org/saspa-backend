@@ -18,6 +18,10 @@ sede_detail = views.SedeViewSet.as_view({
     'delete': 'destroy'
 })
 
+servicio_read = views.ServicioViewSet.as_view({
+    'get': 'list'
+})
+
 servicio_list = views.ServicioViewSet.as_view({
     'post': 'create'
 })
@@ -33,6 +37,7 @@ urlpatterns = [
     path('usuario/sedes/', sede_read, name='usuario-sedes'),
     path('usuario/recuperar-contrasena/', views.PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('usuario/restablecer-contrasena/<uuid:token>/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),    
+    path('usuario/servicios/', servicio_read, name='usuario-servicios'),
     path('admin/sedes/', sede_list, name='admin-sedes-list'),
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
     path('admin/servicios/', servicio_list, name='admin-servicios-list'),

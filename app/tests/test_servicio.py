@@ -6,6 +6,7 @@ class ServicioAdminTests(APITestCase):
 
     def setUp(self):
         self.base_url = '/admin/servicios/'
+        self.read_url = '/usuario/servicios/'
 
         self.servicio_data = {
             "nombre": "Manicure",
@@ -19,6 +20,20 @@ class ServicioAdminTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['mensaje'], "Servicio creado correctamente.")
         self.assertTrue(Servicio.objects.filter(nombre="Manicure").exists())
+
+
+    def test_listar_servicios(self):
+        Servicio.objects.create(nombre="Manicure", descripcion="Corte básico", duracion_minutos=30, precio=10000)
+        Servicio.objects.create(nombre="Pedicure", descripcion="Corte y esmalte", duracion_minutos=45, precio=12000)
+
+        response = self.client.get(self.read_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+        nombres = [servicio["nombre"] for servicio in response.data]
+        self.assertIn("Manicure", nombres)
+        self.assertIn("Pedicure", nombres)
 
 
     def test_modificar_servicio(self):
