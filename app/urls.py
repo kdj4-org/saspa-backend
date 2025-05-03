@@ -47,4 +47,6 @@ urlpatterns = [
     path('cliente/equipo/', empleado_read, name='team-visualization'),
     path('admin/servicios/', servicio_list, name='admin-servicios-list'),
     path('admin/servicios/<int:pk>/', servicio_detail, name='admin-servicios-detail'),
+    path('admin/subir-imagen/', views.UploadImageView.as_view(), name='upload-image'),
+    path('admin/eliminar-imagen/<str:file_id>/', views.DeleteImageView.as_view(), name='delete-image'),
 ]

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Usuario, Servicio, Sede, Empleado, EmpleadoServicio,
-    Cita, Disponibilidad, Bloqueo, Publicacion, Notificacion, Feedback
+    Cita, Disponibilidad, Bloqueo, Publicacion, Notificacion, Feedback, Imagen
 )
 from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -204,3 +204,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = '__all__'
+    
+class UploadedImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Imagen
+        fields = ['id', 'file_id', 'url', 'file_name', 'size', 'uploaded_at']
+        read_only_fields = fields
