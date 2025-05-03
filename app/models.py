@@ -83,7 +83,7 @@ class PasswordResetToken(models.Model):
         return f"Token de recuperación para: {self.usuario.email}"
 
 class Servicio(models.Model):
-    nombre = models.CharField(max_length=255)
+    nombre = models.CharField(max_length=255, unique=True)
     descripcion = models.TextField()
     precio = models.FloatField()
     duracion_minutos = models.IntegerField()

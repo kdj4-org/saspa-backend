@@ -43,7 +43,7 @@ class RegisterUserView(APIView):
             token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm='HS256')
             return Response({
                 'message': "User registered successfully",
-                'access': f"Bearer {str(token)}",
+                'Authorization': f"Bearer {str(token)}",
                 'user': UsuarioSerializer(user).data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -69,7 +69,7 @@ class LoginView(APIView):
             }
             token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm='HS256')
             return Response({
-                'access': f"Bearer {str(token)}",
+                'Authorization': f"Bearer {str(token)}",
                 'user': UsuarioSerializer(user).data
             }, status=status.HTTP_200_OK)
         except User.DoesNotExist:
@@ -143,7 +143,40 @@ class PasswordResetConfirmView(APIView):
 
 class ServicioViewSet(viewsets.ModelViewSet):
     queryset = Servicio.objects.all()
-    serializer_class = ServicioSerializer    
+    serializer_class = ServicioSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = ServicioSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            {"mensaje": "Servicio creado correctamente."},
+            status=status.HTTP_201_CREATED
+        )
+
+    def list(self, request):
+        servicios = Servicio.objects.all()
+        serializer = ServicioSerializer(servicios, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)        
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(
+            {"mensaje": "Servicio actualizado correctamente."},
+            status=status.HTTP_200_OK
+        )
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"mensaje": "Servicio eliminado correctamente."},
+            status=status.HTTP_200_OK
+        )
 
 class SedeViewSet(viewsets.ModelViewSet):
     queryset = Sede.objects.all()
