@@ -18,8 +18,18 @@ sede_detail = views.SedeViewSet.as_view({
     'delete': 'destroy'
 })
 
-empleado_read = views.EmpleadoViewSet.as_view({
+empleado_read = views.EmpleadoClienteViewSet.as_view({
     'get': 'list'
+})
+
+empleado_list = views.EmpleadoAdminViewSet.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+empleado_detail = views.EmpleadoAdminViewSet.as_view({
+    'put': 'update',
+    'delete': 'destroy'
 })
 
 servicio_read = views.ServicioViewSet.as_view({
@@ -44,7 +54,9 @@ urlpatterns = [
     path('usuario/servicios/', servicio_read, name='usuario-servicios'),
     path('admin/sedes/', sede_list, name='admin-sedes-list'),
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
-    path('cliente/equipo/', empleado_read, name='team-visualization'),
+    path('cliente/equipo/', empleado_read, name='cliente-equipo'),
+    path('admin/empleados/', empleado_list, name='admin-empleados-list'),
+    path('admin/empleados/<int:pk>/', empleado_detail, name='admin-empleados-detail'),
     path('admin/servicios/', servicio_list, name='admin-servicios-list'),
     path('admin/servicios/<int:pk>/', servicio_detail, name='admin-servicios-detail'),
 ]
