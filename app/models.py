@@ -193,3 +193,18 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback Cita {self.cita_id}"
+    
+class Imagen(models.Model):
+    file_id = models.CharField(max_length=255, unique=True)
+    file_path = models.URLField()
+    file_name = models.CharField(max_length=255)
+    size = models.PositiveIntegerField(help_text="Tamaño en bytes")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Imagen Subida"
+        verbose_name_plural = "Imágenes Subidas"
+        ordering = ['-uploaded_at']
+    
+    def __str__(self):
+        return f"{self.file_name} ({self.file_id})"
