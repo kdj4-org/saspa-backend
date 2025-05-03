@@ -12,7 +12,7 @@ from .models import (
 )
 from .serializers import (
     UsuarioSerializer, ServicioSerializer, SedeSerializer,
-    EmpleadoSerializer, EmpleadoServicioSerializer, CitaSerializer,
+    EmpleadoAdminSerializer, EmpleadoClienteSerializer, EmpleadoServicioSerializer, CitaSerializer,
     DisponibilidadSerializer, BloqueoSerializer, PublicacionSerializer,
     NotificacionSerializer, FeedbackSerializer, PasswordResetRequestSerializer, 
     PasswordResetConfirmSerializer
@@ -193,9 +193,21 @@ class SedeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         ) 
 
-class EmpleadoViewSet(viewsets.ModelViewSet):
+class EmpleadoClienteViewSet(viewsets.ModelViewSet):
     queryset = Empleado.objects.all()
-    serializer_class = EmpleadoSerializer    
+    serializer_class = EmpleadoClienteSerializer
+
+class EmpleadoAdminViewSet(viewsets.ModelViewSet):
+    queryset = Empleado.objects.all()
+    serializer_class = EmpleadoAdminSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"mensaje": "Empleado eliminado correctamente."},
+            status=status.HTTP_200_OK
+        )
 
 class EmpleadoServicioViewSet(viewsets.ModelViewSet):
     queryset = EmpleadoServicio.objects.all()

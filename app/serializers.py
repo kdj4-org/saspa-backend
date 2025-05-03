@@ -74,12 +74,12 @@ class SedeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EmpleadoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Empleado
+        fields = '__all__'
+    
+class EmpleadoClienteSerializer(EmpleadoSerializer):
     sede = serializers.SerializerMethodField()
-    sede_id = serializers.PrimaryKeyRelatedField(
-        queryset=Sede.objects.all(), 
-        source='sede', 
-        write_only=True
-    )
     servicios = serializers.SerializerMethodField()
     
     class Meta:
@@ -94,6 +94,16 @@ class EmpleadoSerializer(serializers.ModelSerializer):
             id__in=EmpleadoServicio.objects.filter(empleado=obj).values_list('servicio_id', flat=True)
         )
         return list(servicios_qs.values_list('nombre', flat=True))
+
+class EmpleadoAdminSerializer(EmpleadoSerializer):
+    sede_id = serializers.PrimaryKeyRelatedField(
+        queryset=Sede.objects.all(), 
+        source='sede'
+    )
+    
+    class Meta:
+        model = Empleado
+        fields = ['id', 'sede_id', 'nombre', 'url_foto']
 
 class EmpleadoServicioSerializer(serializers.ModelSerializer):
     empleado = EmpleadoSerializer(read_only=True)
