@@ -25,8 +25,6 @@ from django.conf import settings
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
-from rest_framework.response import Response
-from rest_framework import status
 import requests
 
 User = get_user_model()
