@@ -28,6 +28,10 @@ sede_detail = views.SedeViewSet.as_view({
     'delete': 'destroy'
 })
 
+empleado_read = views.EmpleadoViewSet.as_view({
+	'get': 'list'
+})
+
 urlpatterns = [
     #path('', include(router.urls)),    
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
@@ -37,4 +41,5 @@ urlpatterns = [
     path('usuario/restablecer-contrasena/<uuid:token>/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),    
     path('admin/sedes/', sede_list, name='admin-sedes-list'),
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
+	path('cliente/equipo/', empleado_read, name='team-visualization'),
 ]
