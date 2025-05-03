@@ -46,7 +46,7 @@ class RegisterUserView(APIView):
             token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm='HS256')
             return Response({
                 'message': "User registered successfully",
-                'access': f"Bearer {str(token)}",
+                'Authorization': f"Bearer {str(token)}",
                 'user': UsuarioSerializer(user).data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -72,7 +72,7 @@ class LoginView(APIView):
             }
             token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm='HS256')
             return Response({
-                'access': f"Bearer {str(token)}",
+                'Authorization': f"Bearer {str(token)}",
                 'user': UsuarioSerializer(user).data
             }, status=status.HTTP_200_OK)
         except User.DoesNotExist:
