@@ -14,8 +14,9 @@ JWT_SECRET_KEY = config('JWT_SECRET_KEY')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', config('PROD_DOMAIN', default=""), config('DEV_DOMAIN', default="")]
 
-
-# Application definition
+IMAGEKIT_PUBLIC_KEY = config('IMAGEKIT_PUBLIC_KEY', default='')
+IMAGEKIT_PRIVATE_KEY = config('IMAGEKIT_PRIVATE_KEY', default='')
+IMAGEKIT_URL = config('IMAGEKIT_URL_ENDPOINT')
 
 INSTALLED_APPS = [
     'django.contrib.admin',

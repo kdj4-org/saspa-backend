@@ -42,4 +42,5 @@ urlpatterns = [
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
     path('admin/servicios/', servicio_list, name='admin-servicios-list'),
     path('admin/servicios/<int:pk>/', servicio_detail, name='admin-servicios-detail'),
+    path('admin/subir-imagen/', views.UploadImageView.as_view(), name='upload-image'),
 ]

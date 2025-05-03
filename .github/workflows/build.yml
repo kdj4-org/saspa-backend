@@ -17,6 +17,9 @@ jobs:
       SITE_NAME: ${{ secrets.SITE_NAME }}
       EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
       EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      IMAGEKIT_PUBLIC_KEY: ${{ secrets.IMAGEKIT_PUBLIC_KEY }}
+      IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY }}
+      IMAGEKIT_URL: ${{ secrets.IMAGEKIT_URL_ENDPOINT }}
 
     steps:
     - name: Checkout code

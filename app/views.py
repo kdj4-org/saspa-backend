@@ -2,7 +2,6 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
 from .models import (
     Servicio, Sede, Empleado, EmpleadoServicio,
@@ -24,9 +23,13 @@ from django.conf import settings
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from rest_framework.response import Response
+from rest_framework import status
+import requests
 
 User = get_user_model()
 EXPIRY_MINUTES = 30
+MAX_IMAGE_SIZE = 1024 * 1024 * 10
 
 class RegisterUserView(APIView):
     def post(self, request):
@@ -255,3 +258,66 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         if user.rol == 'admin' or user.is_staff:
             return self.queryset
         return self.queryset.filter(cita__usuario=user)
+    
+class UploadImageView(APIView):
+    MAX_FILE_SIZE = 1024 * 1024 * 10
+    ALLOWED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')
+    def post(self, request):
+        if 'image' not in request.FILES:
+            return Response("Falta el archivo 'image'", status=status.HTTP_400_BAD_REQUEST)
+
+        image_file = request.FILES['image']
+        print(image_file)
+
+        if not image_file.name.lower().endswith(self.ALLOWED_EXTENSIONS):
+            return Response(
+                {
+                    "error": f"Formato de archivo no permitido. Formatos aceptados: {', '.join(self.ALLOWED_EXTENSIONS)}",
+                    "success": False
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        print(image_file.size)
+
+        if image_file.size > self.MAX_FILE_SIZE:
+            return Response(
+                {
+                    "error": f"El archivo es demasiado grande. Tamaño máximo permitido: {self.MAX_FILE_SIZE/1024/1024}MB",
+                    "success": False
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            file_content = image_file.read()
+            image_file.seek(0)
+            
+            auth = (settings.IMAGEKIT_PRIVATE_KEY, '')
+            
+            files = {
+                'file': (image_file.name, file_content),
+                'fileName': (None, image_file.name),
+            }
+            
+            response = requests.post(
+                'https://upload.imagekit.io/api/v1/files/upload',
+                auth=auth,
+                files=files,
+                data={
+                    'publicKey': settings.IMAGEKIT_PUBLIC_KEY,
+                }
+            )
+            
+            if response.status_code != 200:
+                raise Exception(f"Error en ImageKit: {response.text}")
+            
+            response_data = response.json()
+            
+            return Response({
+                'success': True,
+                'filePath': response_data['url'],
+                'fileId': response_data['fileId'],
+            })
+        
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
