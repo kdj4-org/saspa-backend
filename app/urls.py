@@ -18,6 +18,10 @@ sede_detail = views.SedeViewSet.as_view({
     'delete': 'destroy'
 })
 
+empleado_read = views.EmpleadoViewSet.as_view({
+    'get': 'list'
+})
+
 servicio_read = views.ServicioViewSet.as_view({
     'get': 'list'
 })
@@ -31,7 +35,7 @@ servicio_detail = views.ServicioViewSet.as_view({
     'delete': 'destroy'
 })
 
-urlpatterns = [  
+urlpatterns = [
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
     path('usuario/sedes/', sede_read, name='usuario-sedes'),
@@ -40,6 +44,7 @@ urlpatterns = [
     path('usuario/servicios/', servicio_read, name='usuario-servicios'),
     path('admin/sedes/', sede_list, name='admin-sedes-list'),
     path('admin/sedes/<int:pk>/', sede_detail, name='admin-sedes-detail'),
+    path('cliente/equipo/', empleado_read, name='team-visualization'),
     path('admin/servicios/', servicio_list, name='admin-servicios-list'),
     path('admin/servicios/<int:pk>/', servicio_detail, name='admin-servicios-detail'),
     path('admin/subir-imagen/', views.UploadImageView.as_view(), name='upload-image'),
