@@ -16,7 +16,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', config('PROD_DOMAIN', default=""), co
 
 IMAGEKIT_PUBLIC_KEY = config('IMAGEKIT_PUBLIC_KEY', default='')
 IMAGEKIT_PRIVATE_KEY = config('IMAGEKIT_PRIVATE_KEY', default='')
-IMAGEKIT_URL = config('IMAGEKIT_URL_ENDPOINT')
+IMAGEKIT_URL = config('IMAGEKIT_URL_ENDPOINT', default='')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
