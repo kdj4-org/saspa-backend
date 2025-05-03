@@ -153,6 +153,11 @@ class ServicioViewSet(viewsets.ModelViewSet):
             {"mensaje": "Servicio creado correctamente."},
             status=status.HTTP_201_CREATED
         )
+
+    def list(self, request):
+        servicios = Servicio.objects.all()
+        serializer = ServicioSerializer(servicios, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)        
     
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
