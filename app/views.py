@@ -150,7 +150,7 @@ class ServicioViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(
-            {"mensaje": "Servicio creada correctamente."},
+            {"mensaje": "Servicio creado correctamente."},
             status=status.HTTP_201_CREATED
         )
     
@@ -161,7 +161,7 @@ class ServicioViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(
-            {"mensaje": "Servicio actualizada correctamente."},
+            {"mensaje": "Servicio actualizado correctamente."},
             status=status.HTTP_200_OK
         )
     
@@ -169,7 +169,7 @@ class ServicioViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(
-            {"mensaje": "Servicio eliminada correctamente."},
+            {"mensaje": "Servicio eliminado correctamente."},
             status=status.HTTP_200_OK
         )
 
