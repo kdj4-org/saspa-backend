@@ -77,6 +77,11 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Empleado
         fields = '__all__'
+        
+    def validate_sede(self, value):
+        if not Sede.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError("La sede asignada no existe.")
+        return value
     
 class EmpleadoClienteSerializer(EmpleadoSerializer):
     sede = serializers.SerializerMethodField()
