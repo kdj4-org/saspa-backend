@@ -31,7 +31,7 @@ class RegisterUserViewTest(APITestCase):
         user = Usuario.objects.get(email=data['email'])
         self.assertTrue(user.check_password(data['password']))
 
-        token = response.data['Authorization'].split(' ')[1]
+        token = response.data['Authorization']
         self.assertIsNotNone(token)
         try:
             jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=['HS256'])
@@ -120,7 +120,7 @@ class LoginViewTest(APITestCase):
         self.assertEqual(response.data['user']['rol'], 'cliente')
         self.assertIsNotNone(response.data['Authorization'])
 
-        token = response.data['Authorization'].split(' ')[1]
+        token = response.data['Authorization']
         self.assertIsNotNone(token)
         try:
             payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=['HS256'])
