@@ -46,7 +46,7 @@ servicio_detail = views.ServicioViewSet.as_view({
 })
 
 publicacion_read = views.PublicacionViewSet.as_view({
-	'get' : 'list'
+    'get' : 'list'
 })
 
 urlpatterns = [
@@ -65,5 +65,5 @@ urlpatterns = [
     path('admin/servicios/<int:pk>/', servicio_detail, name='admin-servicios-detail'),
     path('admin/subir-imagen/', views.UploadImageView.as_view(), name='upload-image'),
     path('admin/eliminar-imagen/<str:file_id>/', views.DeleteImageView.as_view(), name='delete-image'),
-	path('usuario/publicaciones/', publicacion_read, name='usuario-publicaciones'),
+    path('usuario/publicaciones/', publicacion_read, name='usuario-publicaciones'),
 ]
