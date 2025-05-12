@@ -1,10 +1,8 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from .models import (
     Servicio, Sede, Empleado, EmpleadoServicio,
     Cita, Disponibilidad, Bloqueo, Publicacion, 
@@ -17,7 +15,6 @@ from .serializers import (
     NotificacionSerializer, FeedbackSerializer, PasswordResetRequestSerializer, 
     PasswordResetConfirmSerializer
 )
-from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin, IsAdmin
 from datetime import datetime, timedelta, timezone
 from django.utils import timezone as tz
 import jwt
@@ -26,6 +23,7 @@ from django.urls import reverse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 import requests
+from rest_framework.parsers import MultiPartParser, FormParser
 
 User = get_user_model()
 EXPIRY_MINUTES = 30
@@ -272,6 +270,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(cita__usuario=user)
  
 class UploadImageView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     MAX_FILE_SIZE = 1024 * 1024 * 10
     ALLOWED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')
     '''
