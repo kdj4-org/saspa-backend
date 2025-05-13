@@ -5,6 +5,7 @@ from .models import (
 )
 from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_extra_fields.fields import Base64ImageField
 
 User = get_user_model()
 
@@ -220,8 +221,6 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = '__all__'
     
-class UploadedImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Imagen
-        fields = ['id', 'file_id', 'url', 'file_name', 'size', 'uploaded_at']
-        read_only_fields = fields
+class UploadImageSerializer(serializers.Serializer):
+    filename = serializers.CharField()
+    data = Base64ImageField() 

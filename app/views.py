@@ -24,6 +24,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 import requests
 from rest_framework.parsers import MultiPartParser, FormParser
+from .serializers import UploadImageSerializer
 
 User = get_user_model()
 EXPIRY_MINUTES = 30
@@ -270,51 +271,40 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(cita__usuario=user)
  
 class UploadImageView(APIView):
-    parser_classes = [MultiPartParser, FormParser]
     MAX_FILE_SIZE = 1024 * 1024 * 10
     ALLOWED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')
-    '''
-    Endpoint para subir imágenes a ImageKit y a la base de datos
-    '''
+    
     def post(self, request):
-        if 'image' not in request.FILES:
-            return Response(
-                {"error": "Falta el archivo 'image'", "success": False},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = UploadImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        image_file = request.FILES['image']
+        image_file = serializer.validated_data['data']
+        original_name = serializer.validated_data['filename']
+        ext = f".{original_name.split('.')[-1].lower()}"
 
-        if not image_file.name.lower().endswith(self.ALLOWED_EXTENSIONS):
-            return Response(
-                {
-                    "error": f"Formato de archivo no permitido. Formatos aceptados: {', '.join(self.ALLOWED_EXTENSIONS)}",
-                    "success": False
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        print(image_file.size)
+        if ext not in self.ALLOWED_EXTENSIONS:
+            return Response({
+                "error": f"Formato no permitido. Aceptados: {', '.join(self.ALLOWED_EXTENSIONS)}",
+                "success": False
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         if image_file.size > self.MAX_FILE_SIZE:
-            return Response(
-                {
-                    "error": f"El archivo es demasiado grande. Tamaño máximo permitido: {self.MAX_FILE_SIZE/1024/1024}MB",
-                    "success": False
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+            return Response({
+                "error": f"Archivo demasiado grande. Máx: {self.MAX_FILE_SIZE/1024/1024}MB",
+                "success": False
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         try:
+            image_file.seek(0)
             file_content = image_file.read()
             image_file.seek(0)
-            
+
             auth = (settings.IMAGEKIT_PRIVATE_KEY, '')
-            
             files = {
-                'file': (image_file.name, file_content),
-                'fileName': (None, image_file.name),
+                'file': (original_name, file_content),
+                'fileName': (None, original_name),
             }
-            
+
             response = requests.post(
                 'https://upload.imagekit.io/api/v1/files/upload',
                 auth=auth,
@@ -323,33 +313,30 @@ class UploadImageView(APIView):
                     'publicKey': settings.IMAGEKIT_PUBLIC_KEY,
                 }
             )
-            
+
             if response.status_code != 200:
                 raise Exception(f"Error en ImageKit: {response.text}")
-            
-            response_data = response.json()
-            
-            uploaded_image = Imagen.objects.create(
-                file_id=response_data['fileId'],
-                file_path=response_data['url'],
-                file_name=image_file.name,
+
+            data = response.json()
+
+            imagen = Imagen.objects.create(
+                file_id=data['fileId'],
+                file_path=data['url'],
+                file_name=original_name,
                 size=image_file.size
             )
-            
+
             return Response({
-                'success': True,
-                'filePath': response_data['url'],
-                'fileId': response_data['fileId'],
-                'dbId': uploaded_image.id,
-                'message': 'Imagen subida y registrada correctamente'
+                "success": True,
+                "filePath": data['url'],
+                "fileId": data['fileId'],
+                "dbId": imagen.id,
+                "message": "Imagen subida correctamente"
             })
-        
+
         except Exception as e:
-            return Response(
-                {"error": str(e), "success": False},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-    
+            return Response({"error": str(e), "success": False}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class DeleteImageView(APIView):
     def delete(self, request,file_id):
         """
