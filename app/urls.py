@@ -49,6 +49,15 @@ publicacion_read = views.PublicacionViewSet.as_view({
     'get' : 'list'
 })
 
+publicacion_create = views.PublicacionViewSet.as_view({
+    'post': 'create'
+})
+
+publicacion_destroy = views.PublicacionViewSet.as_view({
+    'delete': 'destroy'
+})
+
+
 urlpatterns = [
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
@@ -66,4 +75,6 @@ urlpatterns = [
     path('admin/subir-imagen/', views.UploadImageView.as_view(), name='upload-image'),
     path('admin/eliminar-imagen/<str:file_id>/', views.DeleteImageView.as_view(), name='delete-image'),
     path('usuario/publicaciones/', publicacion_read, name='usuario-publicaciones'),
+    path('admin/publicaciones/', publicacion_create, name='admin-publicaciones-create'),
+    path('admin/publicaciones/<int:pk>/', publicacion_destroy, name='admin-publicaciones-delete'),
 ]

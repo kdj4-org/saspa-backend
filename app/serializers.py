@@ -190,9 +190,16 @@ class BloqueoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PublicacionSerializer(serializers.ModelSerializer):
+    servicio = ServicioSerializer(read_only=True)
+    servicio_id = serializers.PrimaryKeyRelatedField(
+        queryset=Servicio.objects.all(),
+        source='servicio',
+        write_only=True
+    )
+    
     class Meta:
         model = Publicacion
-        fields = '__all__'
+        fields = ['id', 'url_imagen', 'fecha', 'servicio', 'servicio_id']
 
 class NotificacionSerializer(serializers.ModelSerializer):
     usuario = UsuarioSerializer(read_only=True)
