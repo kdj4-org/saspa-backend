@@ -210,7 +210,22 @@ class EmpleadoAdminViewSet(viewsets.ModelViewSet):
 
 class EmpleadoServicioViewSet(viewsets.ModelViewSet):
     queryset = EmpleadoServicio.objects.all()
-    serializer_class = EmpleadoServicioSerializer    
+    serializer_class = EmpleadoServicioSerializer
+
+    def list(self, request, empleado_id):
+        try:
+            empleado = Empleado.objects.get(id=empleado_id)
+        except Empleado.DoesNotExist:
+            return Response({"error": "No existe el empleado"}, status=status.HTTP_404_NOT_FOUND)
+
+        ids_servicios = (
+            EmpleadoServicio.objects
+            .filter(empleado=empleado)
+            .values_list('servicio_id', flat=True)
+        )
+        servicios = Servicio.objects.filter(id__in=ids_servicios)
+        serializer = ServicioSerializer(servicios, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
