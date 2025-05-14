@@ -114,9 +114,8 @@ class EmpleadoAdminSerializer(EmpleadoSerializer):
 class EmpleadoServicioSerializer(serializers.ModelSerializer):
     empleado = EmpleadoSerializer(read_only=True)
     empleado_id = serializers.PrimaryKeyRelatedField(
-        queryset=Empleado.objects.all(), 
         source='empleado', 
-        write_only=True
+        read_only=True
     )
     servicio = ServicioSerializer(read_only=True)
     servicio_id = serializers.PrimaryKeyRelatedField(

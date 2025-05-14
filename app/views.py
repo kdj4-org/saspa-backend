@@ -210,7 +210,57 @@ class EmpleadoAdminViewSet(viewsets.ModelViewSet):
 
 class EmpleadoServicioViewSet(viewsets.ModelViewSet):
     queryset = EmpleadoServicio.objects.all()
-    serializer_class = EmpleadoServicioSerializer    
+    serializer_class = EmpleadoServicioSerializer
+
+    def list(self, request, empleado_id):
+        try:
+            empleado = Empleado.objects.get(id=empleado_id)
+        except Empleado.DoesNotExist:
+            return Response({"error": "No existe el empleado"}, status=status.HTTP_404_NOT_FOUND)
+
+        ids_servicios = (
+            EmpleadoServicio.objects
+            .filter(empleado=empleado)
+            .values_list('servicio_id', flat=True)
+        )
+        servicios = Servicio.objects.filter(id__in=ids_servicios)
+        serializer = ServicioSerializer(servicios, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request, empleado_id):
+        try:
+            empleado = Empleado.objects.get(id=empleado_id)
+        except Empleado.DoesNotExist:
+            return Response({"error": "No existe el empleado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        servicio_id = request.data.get('servicio_id')
+        if not servicio_id:
+            return Response({"error": "Falta el servicio"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            servicio = Servicio.objects.get(id=servicio_id)
+        except Servicio.DoesNotExist:
+            return Response({"error": "Servicio no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if EmpleadoServicio.objects.filter(empleado=empleado, servicio=servicio).exists():
+            return Response({"error": "Este empleado ya esta vinculado a este servicio"}, status=status.HTTP_400_BAD_REQUEST)
+
+        EmpleadoServicio.objects.create(empleado=empleado, servicio=servicio)
+
+        return Response({"empleado_id": empleado_id, "servicio_id": servicio_id, "mensaje": "Empleado vinculado correctamente"}, status=status.HTTP_201_CREATED)
+    
+    def destroy(self, request, empleado_id, servicio_id):
+        try:
+            vinculacion = EmpleadoServicio.objects.get(empleado_id=empleado_id, servicio_id=servicio_id)
+        except EmpleadoServicio.DoesNotExist:
+            return Response({"error": "No existe la vinculacion"}, status=status.HTTP_404_NOT_FOUND)
+        
+        vinculacion.delete()
+        citas = Cita.objects.filter(servicio=servicio_id, empleado=empleado_id)
+        for cita in citas:
+            cita.estado = 'cancelada'
+            cita.save()
+        return Response({"empleado_id": empleado_id, "servicio_id": servicio_id, "mensaje": "Servicio desvinculado correctamente del empleado"}, status=status.HTTP_200_OK)
 
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
