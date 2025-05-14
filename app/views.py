@@ -227,6 +227,28 @@ class EmpleadoServicioViewSet(viewsets.ModelViewSet):
         serializer = ServicioSerializer(servicios, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def create(self, request, empleado_id):
+        try:
+            empleado = Empleado.objects.get(id=empleado_id)
+        except Empleado.DoesNotExist:
+            return Response({"error": "No existe el empleado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        servicio_id = request.data.get('servicio_id')
+        if not servicio_id:
+            return Response({"error": "Falta el servicio"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            servicio = Servicio.objects.get(id=servicio_id)
+        except Servicio.DoesNotExist:
+            return Response({"error": "Servicio no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if EmpleadoServicio.objects.filter(empleado=empleado, servicio=servicio).exists():
+            return Response({"error": "Este empleado ya esta vinculado a este servicio"}, status=status.HTTP_400_BAD_REQUEST)
+
+        EmpleadoServicio.objects.create(empleado=empleado, servicio=servicio)
+
+        return Response({"empleado_id": empleado_id, "servicio_id": servicio_id, "mensaje": "Empleado vinculado correctamente"}, status=status.HTTP_201_CREATED)
+
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
     serializer_class = CitaSerializer

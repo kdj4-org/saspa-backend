@@ -61,6 +61,10 @@ empleado_servicio_read = views.EmpleadoServicioViewSet.as_view({
     'get': 'list'
 })
 
+empleado_servicio_create = views.EmpleadoServicioViewSet.as_view({
+    'post': 'create'
+})
+
 urlpatterns = [
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
@@ -81,4 +85,5 @@ urlpatterns = [
     path('admin/publicaciones/', publicacion_create, name='admin-publicaciones-create'),
     path('admin/publicaciones/<int:pk>/', publicacion_destroy, name='admin-publicaciones-delete'),
     path('usuario/empleados/<int:empleado_id>/servicios/', empleado_servicio_read, name='usuario-servicios-read'),
+    path('admin/empleados/<int:empleado_id>/servicios/', empleado_servicio_create, name='admin-servicios-create'),
 ]
