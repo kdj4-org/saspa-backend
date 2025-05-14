@@ -248,6 +248,19 @@ class EmpleadoServicioViewSet(viewsets.ModelViewSet):
         EmpleadoServicio.objects.create(empleado=empleado, servicio=servicio)
 
         return Response({"empleado_id": empleado_id, "servicio_id": servicio_id, "mensaje": "Empleado vinculado correctamente"}, status=status.HTTP_201_CREATED)
+    
+    def destroy(self, request, empleado_id, servicio_id):
+        try:
+            vinculacion = EmpleadoServicio.objects.get(empleado_id=empleado_id, servicio_id=servicio_id)
+        except EmpleadoServicio.DoesNotExist:
+            return Response({"error": "No existe la vinculacion"}, status=status.HTTP_404_NOT_FOUND)
+        
+        vinculacion.delete()
+        citas = Cita.objects.filter(servicio=servicio_id, empleado=empleado_id)
+        for cita in citas:
+            cita.estado = 'cancelada'
+            cita.save()
+        return Response({"empleado_id": empleado_id, "servicio_id": servicio_id, "mensaje": "Servicio desvinculado correctamente del empleado"}, status=status.HTTP_200_OK)
 
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
