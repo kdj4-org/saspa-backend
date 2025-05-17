@@ -129,35 +129,21 @@ class EmpleadoServicioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CitaSerializer(serializers.ModelSerializer):
-    usuario = UsuarioSerializer(read_only=True)
-    usuario_id = serializers.PrimaryKeyRelatedField(
-        queryset=Usuario.objects.all(),
-        source='usuario',
-        write_only=True
-    )
-    servicio = ServicioSerializer(read_only=True)
-    servicio_id = serializers.PrimaryKeyRelatedField(
-        queryset=Servicio.objects.all(),
-        source='servicio',
-        write_only=True
-    )
-    empleado = EmpleadoSerializer(read_only=True)
-    empleado_id = serializers.PrimaryKeyRelatedField(
-        queryset=Empleado.objects.all(),
-        source='empleado',
-        write_only=True
-    )
-    sede = SedeSerializer(read_only=True)
-    sede_id = serializers.PrimaryKeyRelatedField(
-        queryset=Sede.objects.all(),
-        source='sede',
-        write_only=True
-    )
-    
+    fecha = serializers.SerializerMethodField()
+    hora = serializers.SerializerMethodField()
+
     class Meta:
         model = Cita
-        fields = '__all__'
-        read_only_fields = ['estado']
+        fields = [
+            'id', 'fecha', 'hora', 'estado',
+            'usuario_id', 'servicio_id', 'empleado_id', 'sede_id'
+        ]
+
+    def get_fecha(self, obj):
+        return obj.fecha_inicio.date().isoformat()
+
+    def get_hora(self, obj):
+        return obj.fecha_inicio.time().strftime('%H:%M')
 
 class DisponibilidadSerializer(serializers.ModelSerializer):
     empleado = EmpleadoSerializer(read_only=True)
