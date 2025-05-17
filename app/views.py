@@ -265,15 +265,29 @@ class EmpleadoServicioViewSet(viewsets.ModelViewSet):
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
     serializer_class = CitaSerializer
-    
-    def get_queryset(self):
-        user = self.request.user
-        if user.rol == 'admin' or user.is_staff:
-            return self.queryset
-        elif user.rol == 'cliente':
-            return self.queryset.filter(usuario=user)
-        return self.queryset.none()
-    
+
+    def list(self, request):
+        estado = request.query_params.get('estado')
+        orden = request.query_params.get('orden')
+
+        citas = self.queryset
+        if estado:
+            estados_validos  = [choice[0] for choice in Cita.ESTADOS]
+            if estado not in estados_validos:
+                return Response(
+                {"error": f"Estado '{estado}' no válido. Opciones: {estados_validos}"},
+                status=status.HTTP_400_BAD_REQUEST
+                )
+            citas = citas.filter(estado=estado)
+
+        if orden == 'desc':
+            citas = citas.order_by('-fecha_inicio')
+        else:
+            citas = citas.order_by('fecha_inicio')
+        
+        serializer = CitaSerializer(citas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'])
     def aprobar(self, request, pk=None):
         cita = self.get_object()
