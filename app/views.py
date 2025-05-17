@@ -272,11 +272,11 @@ class CitaViewSet(viewsets.ModelViewSet):
 
         citas = self.queryset
         if estado:
-            estados_validos  = [choice[0] for choice in Cita.ESTADOS]
+            estados_validos = [choice[0] for choice in Cita.ESTADOS]
             if estado not in estados_validos:
                 return Response(
-                {"error": f"Estado '{estado}' no válido. Opciones: {estados_validos}"},
-                status=status.HTTP_400_BAD_REQUEST
+                    {"error": f"Estado '{estado}' no válido. Opciones: {estados_validos}"},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
             citas = citas.filter(estado=estado)
 
@@ -291,8 +291,16 @@ class CitaViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None):
         cita = self.get_object()
         nuevo_estado = request.data.get('estado')
-
-        estados_validos  = [choice[0] for choice in Cita.ESTADOS]
+        estados_validos = [choice[0] for choice in Cita.ESTADOS]
+        dias_ingles_a_espanol = {
+            'monday': 'lunes',
+            'tuesday': 'martes',
+            'wednesday': 'miércoles',
+            'thursday': 'jueves',
+            'friday': 'viernes',
+            'saturday': 'sábado',
+            'sunday': 'domingo'
+        }
 
         if nuevo_estado not in estados_validos:
             return Response(
@@ -313,6 +321,39 @@ class CitaViewSet(viewsets.ModelViewSet):
             )
 
         if estado_actual in transiciones and nuevo_estado in transiciones[estado_actual]:
+            if nuevo_estado == 'aprobada':
+                fecha_inicio = cita.fecha_inicio
+                duracion = cita.servicio.duracion_minutos
+                fecha_fin = fecha_inicio + timedelta(minutes=duracion)
+                dia = dias_ingles_a_espanol[fecha_inicio.strftime('%A').lower()]
+
+                disponible = Disponibilidad.objects.filter(
+                    empleado = cita.empleado,
+                    dia = dia,
+                    hora_inicio__lte = fecha_inicio.time(),
+                    hora_fin__gte = fecha_fin.time()
+                ).exists()
+                if not disponible:
+                    return Response({"error": "El empleado no tiene disponibilidad para esta cita"}, status=status.HTTP_400_BAD_REQUEST)
+                
+                hay_bloqueo = Bloqueo.objects.filter(
+                    empleado = cita.empleado,
+                    fecha_inicio__lt=fecha_fin,
+                    fecha_fin__gt=fecha_inicio
+                ).exists()
+                if hay_bloqueo:
+                    return Response({"error": "El empleado tiene un bloqueo en ese horario'"}, status=status.HTTP_400_BAD_REQUEST)
+                
+                Bloqueo.objects.create(
+                    empleado = cita.empleado,
+                    cita = cita,
+                    fecha_inicio = fecha_inicio,
+                    fecha_fin = fecha_fin
+                )
+            if nuevo_estado == 'cancelada':
+                Bloqueo.objects.filter(
+                    cita = cita
+                ).delete()
             cita.estado = nuevo_estado
             cita.save()
             return Response(
