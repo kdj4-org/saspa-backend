@@ -153,7 +153,7 @@ class Disponibilidad(models.Model):
 
 class Bloqueo(models.Model):
     empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
-    cita = models.ForeignKey(Cita, on_delete=models.CASCADE)
+    cita = models.ForeignKey(Cita, on_delete=models.CASCADE, null=True)
     fecha_inicio = models.DateTimeField()
     fecha_fin = models.DateTimeField()
 
