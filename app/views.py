@@ -370,6 +370,67 @@ class DisponibilidadViewSet(viewsets.ModelViewSet):
     queryset = Disponibilidad.objects.all()
     serializer_class = DisponibilidadSerializer
 
+    def list(self, request):
+        response = []
+        empleados = Empleado.objects.all()
+
+        for empleado in empleados:
+            horario = {}
+            horario["empleado_id"] = empleado.id
+            disponibilidad = []
+            bloques = Disponibilidad.objects.filter(empleado = empleado.id)
+
+            for bloque in bloques:
+                if all(d["dia"] != bloque.dia for d in disponibilidad):
+                    disponibilidad.append({"dia": bloque.dia, "bloques": [{"hora_inicio": bloque.hora_inicio, "hora_fin": bloque.hora_fin}]})
+                else:
+                    for dia in disponibilidad:
+                        if dia["dia"] == bloque.dia:
+                            dia["bloques"].append({"hora_inicio": bloque.hora_inicio, "hora_fin": bloque.hora_fin})
+            
+            horario["disponibilidad"] = disponibilidad
+
+            response.append(horario)
+        
+        return Response(response, status=status.HTTP_200_OK)
+    
+    def create(self, request, pk=None):
+        disponibilidad = request.data.get("disponibilidad")
+        empleado = Empleado.objects.get(id=pk)
+        if empleado:
+            for dia in disponibilidad:
+                if dia.get("dia"):
+                    bloques = dia.get("bloques")
+                    for bloque in bloques:
+                        if bloque.get('hora_inicio') and bloque.get('hora_fin'):
+                            Disponibilidad.objects.create(
+                                empleado = empleado,
+                                dia = dia.get('dia'),
+                                hora_inicio = bloque.get('hora_inicio'),
+                                hora_fin = bloque.get('hora_fin')
+                            )
+        response = {"mensaje": "Disponibilidad creada correctamente."}
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None):
+        disponibilidad = request.data.get("disponibilidad")
+        empleado = Empleado.objects.get(id=pk)
+        if empleado:
+            Disponibilidad.objects.filter(empleado=empleado).delete()
+            for dia in disponibilidad:
+                if dia.get("dia"):
+                    bloques = dia.get("bloques")
+                    for bloque in bloques:
+                        if bloque.get('hora_inicio') and bloque.get('hora_fin'):
+                            Disponibilidad.objects.create(
+                                empleado = empleado,
+                                dia = dia.get('dia'),
+                                hora_inicio = bloque.get('hora_inicio'),
+                                hora_fin = bloque.get('hora_fin')
+                            )
+        response = {"mensaje": "Disponibilidad actualizada correctamente."}
+        return Response(response, status=status.HTTP_200_OK)
+
 class BloqueoViewSet(viewsets.ModelViewSet):
     queryset = Bloqueo.objects.all()
     serializer_class = BloqueoSerializer

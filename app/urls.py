@@ -77,6 +77,15 @@ admin_citas_update = views.CitaViewSet.as_view({
     'put': 'update'
 })
 
+disponibilidad_read = views.DisponibilidadViewSet.as_view({
+    'get': 'list'
+})
+
+disponibilidad_detail = views.DisponibilidadViewSet.as_view({
+    'post': 'create',
+    'put': 'update'
+})
+
 urlpatterns = [
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
@@ -101,4 +110,6 @@ urlpatterns = [
     path('admin/empleados/<int:empleado_id>/servicios/<int:servicio_id>/', empleado_servicio_destroy, name='admin-servicios-destroy'),
     path('admin/citas/', admin_citas_list, name='admin-citas-list'),
     path('admin/citas/<int:pk>/', admin_citas_update, name='admin-citas-update'),
+    path('admin/disponibilidad-empleados/', disponibilidad_read, name='admin-disponibilidad-empleados'),
+    path('admin/empleados/<int:pk>/disponibilidad/', disponibilidad_detail, name='admin-empleados-disponibilidad-detail'),
 ]
