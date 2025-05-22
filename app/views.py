@@ -409,7 +409,7 @@ class DisponibilidadViewSet(viewsets.ModelViewSet):
                                 hora_inicio = bloque.get('hora_inicio'),
                                 hora_fin = bloque.get('hora_fin')
                             )
-        response = { "mensaje": "Disponibilidad creada correctamente." }
+        response = {"mensaje": "Disponibilidad creada correctamente."}
         return Response(response, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
@@ -428,7 +428,7 @@ class DisponibilidadViewSet(viewsets.ModelViewSet):
                                 hora_inicio = bloque.get('hora_inicio'),
                                 hora_fin = bloque.get('hora_fin')
                             )
-        response = { "mensaje": "Disponibilidad actualizada correctamente." }
+        response = {"mensaje": "Disponibilidad actualizada correctamente."}
         return Response(response, status=status.HTTP_200_OK)
 
 class BloqueoViewSet(viewsets.ModelViewSet):
