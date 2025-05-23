@@ -168,7 +168,8 @@ class BloqueoSerializer(serializers.ModelSerializer):
     cita_id = serializers.PrimaryKeyRelatedField(
         queryset=Cita.objects.all(),
         source='cita',
-        write_only=True
+        write_only=True,
+        allow_null=True
     )
     
     class Meta:
