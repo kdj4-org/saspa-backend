@@ -158,13 +158,13 @@ class DisponibilidadSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BloqueoSerializer(serializers.ModelSerializer):
-    empleado = EmpleadoSerializer(read_only=True)
+    empleado = serializers.SerializerMethodField()
     empleado_id = serializers.PrimaryKeyRelatedField(
         queryset=Empleado.objects.all(),
         source='empleado',
         write_only=True
     )
-    cita = CitaSerializer(read_only=True)
+    cita = serializers.SerializerMethodField()
     cita_id = serializers.PrimaryKeyRelatedField(
         queryset=Cita.objects.all(),
         source='cita',
@@ -174,6 +174,16 @@ class BloqueoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bloqueo
         fields = '__all__'
+
+    def get_empleado(self, obj):
+        if obj.empleado:
+            return obj.empleado.nombre
+        return None
+
+    def get_cita(self, obj):
+        if obj.cita:
+            return obj.cita.id
+        return None
 
 class PublicacionSerializer(serializers.ModelSerializer):
     servicio = ServicioSerializer(read_only=True)

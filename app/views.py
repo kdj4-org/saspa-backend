@@ -435,6 +435,14 @@ class BloqueoViewSet(viewsets.ModelViewSet):
     queryset = Bloqueo.objects.all()
     serializer_class = BloqueoSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"mensaje": "Bloqueo eliminado correctamente."},
+            status=status.HTTP_200_OK
+        )
+
 class PublicacionViewSet(viewsets.ModelViewSet):
     queryset = Publicacion.objects.all()
     serializer_class = PublicacionSerializer
