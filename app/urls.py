@@ -87,12 +87,12 @@ disponibilidad_detail = views.DisponibilidadViewSet.as_view({
 })
 
 bloqueo_list = views.BloqueoViewSet.as_view({
-	'get': 'list',
-	'post': 'create'
+    'get': 'list',
+    'post': 'create'
 })
 
 bloqueo_delete = views.BloqueoViewSet.as_view({
-	'delete': 'destroy'
+    'delete': 'destroy'
 })
 
 urlpatterns = [
@@ -121,6 +121,6 @@ urlpatterns = [
     path('admin/citas/<int:pk>/', admin_citas_update, name='admin-citas-update'),
     path('admin/disponibilidad-empleados/', disponibilidad_read, name='admin-disponibilidad-empleados'),
     path('admin/empleados/<int:pk>/disponibilidad/', disponibilidad_detail, name='admin-empleados-disponibilidad-detail'),
-	path('admin/bloqueo/', bloqueo_list, name='admin-bloqueo'),
-	path('admin/bloqueo/<int:pk>/', bloqueo_delete, name='admin-bloqueo-delete')
+    path('admin/bloqueo/', bloqueo_list, name='admin-bloqueo'),
+    path('admin/bloqueo/<int:pk>/', bloqueo_delete, name='admin-bloqueo-delete')
 ]
