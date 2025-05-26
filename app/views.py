@@ -484,6 +484,38 @@ class BloqueoViewSet(viewsets.ModelViewSet):
     queryset = Bloqueo.objects.all()
     serializer_class = BloqueoSerializer
 
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        bloqueo = request.data
+        empleado = Empleado.objects.get(id=bloqueo.get("empleado_id"))
+        horario = Disponibilidad.objects.filter(empleado=empleado)
+        disponible = False
+
+        dias_semana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+
+        dt_inicio = datetime.fromisoformat(bloqueo.get("fecha_inicio"))
+        dt_final = datetime.fromisoformat(bloqueo.get("fecha_fin"))
+
+        dia_bloqueo = dias_semana[dt_inicio.weekday()]
+        
+        hora_inicio = dt_inicio.time()
+        hora_final = dt_final.time()
+
+        for bloque in horario:
+            if bloque.dia == dia_bloqueo:
+                if bloque.hora_inicio <= hora_inicio < hora_final <= bloque.hora_fin:
+                    disponible = True
+        
+        if not disponible:
+            response = {"mensaje": "No se puede agregar el bloqueo debido a que no hay disponibilidad."}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+        self.perform_create(serializer)
+        response = {"mensaje": "Bloqueo creado correctamente."}
+        return Response(response, status=status.HTTP_201_CREATED)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
