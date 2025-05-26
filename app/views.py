@@ -25,6 +25,7 @@ from django.core.mail import EmailMultiAlternatives
 import requests
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import UploadImageSerializer
+from zoneinfo import ZoneInfo
 
 User = get_user_model()
 EXPIRY_MINUTES = 30
@@ -512,6 +513,18 @@ class BloqueoViewSet(viewsets.ModelViewSet):
             response = {"mensaje": "No se puede agregar el bloqueo debido a que no hay disponibilidad."}
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
+        otros_bloqueos = Bloqueo.objects.filter(empleado=empleado)
+
+        for otro_bloqueo in otros_bloqueos:
+            dia_otro_bloqueo = dias_semana[otro_bloqueo.fecha_inicio.weekday()]            
+            hora_otro_inicio = otro_bloqueo.fecha_inicio.astimezone(ZoneInfo("America/Bogota")).time()
+            hora_otro_final = otro_bloqueo.fecha_fin.astimezone(ZoneInfo("America/Bogota")).time()
+
+            if dia_bloqueo == dia_otro_bloqueo:
+                if hora_inicio < hora_otro_final and hora_otro_inicio < hora_final:
+                    response = {"mensaje": "La cita se cruza con otra ya existente."}
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
         self.perform_create(serializer)
         response = {"mensaje": "Bloqueo creado correctamente."}
         return Response(response, status=status.HTTP_201_CREATED)
