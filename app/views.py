@@ -397,37 +397,86 @@ class DisponibilidadViewSet(viewsets.ModelViewSet):
     def create(self, request, pk=None):
         disponibilidad = request.data.get("disponibilidad")
         empleado = Empleado.objects.get(id=pk)
-        if empleado:
-            for dia in disponibilidad:
-                if dia.get("dia"):
-                    bloques = dia.get("bloques")
-                    for bloque in bloques:
-                        if bloque.get('hora_inicio') and bloque.get('hora_fin'):
-                            Disponibilidad.objects.create(
-                                empleado = empleado,
-                                dia = dia.get('dia'),
-                                hora_inicio = bloque.get('hora_inicio'),
-                                hora_fin = bloque.get('hora_fin')
-                            )
+
+        if not empleado:
+            response = {"mensaje": "Ningun empleado coincide con el id ingresado."}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not isinstance(disponibilidad, list):
+            response = {"mensaje": "Error, no se ha especificado correctamente el campo disponibilidad."}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+        registros = []
+
+        for dia in disponibilidad:
+            if not dia.get("dia"):
+                response = {"mensaje": "Error, día no especificado."}
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            
+            bloques = dia.get("bloques")
+            for bloque in bloques:
+                if bloque.get("hora_inicio") and bloque.get("hora_fin"):
+                    registros.append({
+                        "dia": dia.get("dia"),
+                        "inicio": bloque.get("hora_inicio"),
+                        "fin": bloque.get("hora_fin")
+                    })
+                else:
+                    response = {"mensaje": "Error al ingresar los datos, se debe especificar la hora de inicio y la hora final correctamente."}
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+        for registro in registros:
+            Disponibilidad.objects.create(
+                empleado = empleado,
+                dia = registro["dia"],
+                hora_inicio = registro["inicio"],
+                hora_fin = registro["fin"]
+            )
+
         response = {"mensaje": "Disponibilidad creada correctamente."}
         return Response(response, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
         disponibilidad = request.data.get("disponibilidad")
         empleado = Empleado.objects.get(id=pk)
-        if empleado:
-            Disponibilidad.objects.filter(empleado=empleado).delete()
-            for dia in disponibilidad:
-                if dia.get("dia"):
-                    bloques = dia.get("bloques")
-                    for bloque in bloques:
-                        if bloque.get('hora_inicio') and bloque.get('hora_fin'):
-                            Disponibilidad.objects.create(
-                                empleado = empleado,
-                                dia = dia.get('dia'),
-                                hora_inicio = bloque.get('hora_inicio'),
-                                hora_fin = bloque.get('hora_fin')
-                            )
+
+        if not empleado:
+            response = {"mensaje": "Ningun empleado coincide con el id ingresado."}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not isinstance(disponibilidad, list):
+            response = {"mensaje": "Error, no se ha especificado correctamente el campo disponibilidad."}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        registros = []
+
+        for dia in disponibilidad:
+            if not dia.get("dia"):
+                response = {"mensaje": "Error, día no especificado."}
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            
+            bloques = dia.get("bloques")
+            for bloque in bloques:
+                if bloque.get("hora_inicio") and bloque.get("hora_fin"):
+                    registros.append({
+                        "dia": dia.get("dia"),
+                        "inicio": bloque.get("hora_inicio"),
+                        "fin": bloque.get("hora_fin")
+                    })
+                else:
+                    response = {"mensaje": "Error al ingresar los datos, se debe especificar la hora de inicio y la hora final correctamente."}
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                
+        Disponibilidad.objects.filter(empleado=empleado).delete()
+        
+        for registro in registros:
+            Disponibilidad.objects.create(
+                empleado = empleado,
+                dia = registro["dia"],
+                hora_inicio = registro["inicio"],
+                hora_fin = registro["fin"]
+            )
+
         response = {"mensaje": "Disponibilidad actualizada correctamente."}
         return Response(response, status=status.HTTP_200_OK)
 
