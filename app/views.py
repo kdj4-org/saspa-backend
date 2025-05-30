@@ -23,7 +23,7 @@ from django.urls import reverse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 import requests
-from rest_framework.parsers import MultiPartParser, FormParser
+from django.db.models import Count, Q
 from .serializers import UploadImageSerializer
 from zoneinfo import ZoneInfo
 
@@ -366,6 +366,91 @@ class CitaViewSet(viewsets.ModelViewSet):
             {'mensaje': f"No se puede cambiar el estado de '{estado_actual}' a '{nuevo_estado}'"},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+# flake8: noqa: C901
+class ReportesView(APIView):
+    def get(self, request):
+        parametros_permitidos = {
+            "fecha_inicio",
+            "fecha_fin",
+            "servicio_id",
+            "sede_id",
+            "empleado_id",
+            "periodo"
+        }
+
+        parametros_recibidos = set(request.query_params.keys())
+
+        parametros_invalidos = parametros_recibidos - parametros_permitidos
+
+        if parametros_invalidos:
+            return Response(
+                {"error": f"Parámetros inválidos en la consulta: {', '.join(parametros_invalidos)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        fecha_inicio = request.query_params.get("fecha_inicio")
+        fecha_fin = request.query_params.get("fecha_fin")
+        servicio_id = request.query_params.get("servicio_id")
+        sede_id = request.query_params.get("sede_id")
+        empleado_id = request.query_params.get("empleado_id")
+        periodo = request.query_params.get("periodo")
+
+        now = tz.now().date()
+        if periodo:
+            if periodo == "semanal":
+                fecha_inicio = now - timedelta(days=7)
+                fecha_fin = now
+            elif periodo == "mensual":
+                fecha_inicio = now.replace(day=1)
+                fecha_fin = (fecha_inicio + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            elif periodo == "anual":
+                fecha_inicio = now.replace(month=1, day=1)
+                fecha_fin = now.replace(month=12, day=31)
+            else:
+                return Response({"error": "Periodo no válido."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            if fecha_inicio and isinstance(fecha_inicio, str):
+                fecha_inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
+            if fecha_fin and isinstance(fecha_fin, str):
+                fecha_fin = datetime.strptime(fecha_fin, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"error": "Formato de fecha inválido. Use YYYY-MM-DD."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        filtros = Q()
+        if fecha_inicio:
+            filtros &= Q(fecha_inicio__date__gte=fecha_inicio)
+        if fecha_fin:
+            filtros &= Q(fecha_inicio__date__lte=fecha_fin)
+        if servicio_id:
+            filtros &= Q(servicio_id=servicio_id)
+        if sede_id:
+            filtros &= Q(sede_id=sede_id)
+        if empleado_id:
+            filtros &= Q(empleado_id=empleado_id)
+
+        queryset = (
+            Cita.objects
+            .filter(filtros)
+            .values('servicio__nombre', 'sede__barrio', 'empleado__nombre')
+            .annotate(total_citas=Count('id'))
+            .order_by('servicio__nombre', 'sede__barrio', 'empleado__nombre')
+        )
+
+        reporte = [
+            {
+                "servicio": item["servicio__nombre"],
+                "sede": item["sede__barrio"],
+                "empleado": item["empleado__nombre"],
+                "total_citas": item["total_citas"]
+            }
+            for item in queryset
+        ]
+
+        return Response({"reporte": reporte}, status=status.HTTP_200_OK)
 
 class DisponibilidadViewSet(viewsets.ModelViewSet):
     queryset = Disponibilidad.objects.all()
