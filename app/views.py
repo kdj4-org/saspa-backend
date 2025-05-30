@@ -576,36 +576,20 @@ class BloqueoViewSet(viewsets.ModelViewSet):
 
         bloqueo = request.data
         empleado = Empleado.objects.get(id=bloqueo.get("empleado_id"))
-        horario = Disponibilidad.objects.filter(empleado=empleado)
-        disponible = False
-
-        dias_semana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
-
         dt_inicio = datetime.fromisoformat(bloqueo.get("fecha_inicio"))
         dt_final = datetime.fromisoformat(bloqueo.get("fecha_fin"))
-
-        dia_bloqueo = dias_semana[dt_inicio.weekday()]
-        
+        fecha_bloqueo = dt_inicio.date()
         hora_inicio = dt_inicio.time()
         hora_final = dt_final.time()
-
-        for bloque in horario:
-            if bloque.dia == dia_bloqueo:
-                if bloque.hora_inicio <= hora_inicio < hora_final <= bloque.hora_fin:
-                    disponible = True
-        
-        if not disponible:
-            response = {"mensaje": "No se puede agregar el bloqueo debido a que no hay disponibilidad."}
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
         otros_bloqueos = Bloqueo.objects.filter(empleado=empleado)
 
         for otro_bloqueo in otros_bloqueos:
-            dia_otro_bloqueo = dias_semana[otro_bloqueo.fecha_inicio.weekday()]            
+            fecha_otro_bloqueo = otro_bloqueo.fecha_inicio.date()           
             hora_otro_inicio = otro_bloqueo.fecha_inicio.astimezone(ZoneInfo("America/Bogota")).time()
             hora_otro_final = otro_bloqueo.fecha_fin.astimezone(ZoneInfo("America/Bogota")).time()
 
-            if dia_bloqueo == dia_otro_bloqueo:
+            if fecha_bloqueo == fecha_otro_bloqueo:
                 if hora_inicio < hora_otro_final and hora_otro_inicio < hora_final:
                     response = {"mensaje": "La cita se cruza con otra ya existente."}
                     return Response(response, status=status.HTTP_400_BAD_REQUEST)
