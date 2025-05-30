@@ -122,5 +122,6 @@ urlpatterns = [
     path('admin/disponibilidad-empleados/', disponibilidad_read, name='admin-disponibilidad-empleados'),
     path('admin/empleados/<int:pk>/disponibilidad/', disponibilidad_detail, name='admin-empleados-disponibilidad-detail'),
     path('admin/bloqueo/', bloqueo_list, name='admin-bloqueo'),
-    path('admin/bloqueo/<int:pk>/', bloqueo_delete, name='admin-bloqueo-delete')
+    path('admin/bloqueo/<int:pk>/', bloqueo_delete, name='admin-bloqueo-delete'),
+    path('admin/reportes/', views.ReportesView.as_view(), name='admin-reportes-list')
 ]
