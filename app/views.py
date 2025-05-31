@@ -378,6 +378,40 @@ class CitaClienteViewSet(viewsets.ModelViewSet):
         serializer = CitaClienteSerializer(qs, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def create(self, request, pk):
+        data = request.data.copy()
+        data["estado"] = "por aprobar"
+        try:
+            data["usuario"] = Usuario.objects.get(id=pk)
+        except:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+
+        cita = request.data
+        empleado = cita.get("empleado")
+        dt_inicio = datetime.fromisoformat(cita.get("fecha_inicio"))
+        dt_final = dt_inicio + timedelta(minutes=30)
+        fecha_cita = dt_inicio.date()
+        hora_inicio = dt_inicio.time()
+        hora_final = dt_final.time()
+        
+        bloqueos = Bloqueo.objects.filter(empleado=empleado)
+
+        for bloqueo in bloqueos:
+            fecha_bloqueo = bloqueo.fecha_inicio.date()           
+            hora_bloqueo_inicio = bloqueo.fecha_inicio.astimezone(ZoneInfo("America/Bogota")).time()
+            hora_bloqueo_final = bloqueo.fecha_fin.astimezone(ZoneInfo("America/Bogota")).time()
+
+            if fecha_cita == fecha_bloqueo:
+                if hora_inicio < hora_bloqueo_final and hora_bloqueo_inicio < hora_final:
+                    response = {"mensaje": "La cita se cruza con otra ya existente."}
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        response = {"mensaje": "Cita creada correctamente."}
+        return Response(response, status=status.HTTP_201_CREATED)
 
 # flake8: noqa: C901
 class ReportesView(APIView):
