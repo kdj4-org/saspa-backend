@@ -155,6 +155,7 @@ class CitaClienteSerializer(serializers.ModelSerializer):
     
     def get_estado(self, obj):
         return obj.estado
+    
     def get_usuario(self, obj):
         return obj.usuario.nombre
 
