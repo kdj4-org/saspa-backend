@@ -97,6 +97,7 @@ bloqueo_delete = views.BloqueoViewSet.as_view({
 
 citas_list = views.CitaClienteViewSet.as_view({
     'get': 'list',
+    'post': 'create'
 })
 
 urlpatterns = [
