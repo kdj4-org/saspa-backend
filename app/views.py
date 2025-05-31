@@ -582,6 +582,28 @@ class BloqueoViewSet(viewsets.ModelViewSet):
     queryset = Bloqueo.objects.all()
     serializer_class = BloqueoSerializer
 
+    def list(self, request, *args, **kwargs):
+        empleado = Empleado.objects.filter(id=request.GET.get('empleado_id')).first()
+        fecha = request.GET.get('fecha')
+        queryset = self.queryset
+
+        if empleado:
+            queryset = queryset.filter(empleado=empleado)
+        if fecha:
+            try:
+                fecha_dt = datetime.strptime(fecha, '%Y-%m-%d')
+                fecha_inicio_dia = tz.make_aware(fecha_dt)
+                fecha_fin_dia = fecha_inicio_dia + timedelta(days=1)
+                queryset = queryset.filter(fecha_inicio__gte=fecha_inicio_dia, fecha_inicio__lt=fecha_fin_dia)
+            except ValueError:
+                return Response(
+                    {"error": "Formato de fecha inválido. Usa YYYY-MM-DD."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
