@@ -144,6 +144,20 @@ class CitaSerializer(serializers.ModelSerializer):
 
     def get_hora(self, obj):
         return obj.fecha_inicio.time().strftime('%H:%M')
+    
+class CitaClienteSerializer(serializers.ModelSerializer):
+    estado = serializers.SerializerMethodField()
+    usuario = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cita
+        fields = ['estado', 'usuario', 'fecha_inicio', 'servicio', 'empleado', 'sede']
+    
+    def get_estado(self, obj):
+        return obj.estado
+    
+    def get_usuario(self, obj):
+        return obj.usuario.nombre
 
 class DisponibilidadSerializer(serializers.ModelSerializer):
     empleado = EmpleadoSerializer(read_only=True)

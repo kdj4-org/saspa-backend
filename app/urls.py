@@ -95,6 +95,10 @@ bloqueo_delete = views.BloqueoViewSet.as_view({
     'delete': 'destroy'
 })
 
+citas_list = views.CitaClienteViewSet.as_view({
+    'get': 'list',
+})
+
 urlpatterns = [
     path('cliente/registrar/', views.RegisterUserView.as_view(), name='register'),
     path('usuario/login/', views.LoginView.as_view(), name='login'),
@@ -123,5 +127,6 @@ urlpatterns = [
     path('admin/empleados/<int:pk>/disponibilidad/', disponibilidad_detail, name='admin-empleados-disponibilidad-detail'),
     path('admin/bloqueo/', bloqueo_list, name='admin-bloqueo'),
     path('admin/bloqueo/<int:pk>/', bloqueo_delete, name='admin-bloqueo-delete'),
-    path('admin/reportes/', views.ReportesView.as_view(), name='admin-reportes-list')
+    path('admin/reportes/', views.ReportesView.as_view(), name='admin-reportes-list'),
+    path('cliente/<int:pk>/citas/', citas_list, name='cliente-citas')
 ]

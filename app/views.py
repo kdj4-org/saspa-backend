@@ -6,14 +6,15 @@ from django.contrib.auth import get_user_model
 from .models import (
     Servicio, Sede, Empleado, EmpleadoServicio,
     Cita, Disponibilidad, Bloqueo, Publicacion, 
-    Notificacion, Feedback, PasswordResetToken, Imagen
+    Notificacion, Feedback, PasswordResetToken,
+    Imagen, Usuario
 )
 from .serializers import (
     UsuarioSerializer, ServicioSerializer, SedeSerializer,
     EmpleadoAdminSerializer, EmpleadoClienteSerializer, EmpleadoServicioSerializer, CitaSerializer,
     DisponibilidadSerializer, BloqueoSerializer, PublicacionSerializer,
     NotificacionSerializer, FeedbackSerializer, PasswordResetRequestSerializer, 
-    PasswordResetConfirmSerializer
+    PasswordResetConfirmSerializer, CitaClienteSerializer
 )
 from datetime import datetime, timedelta, timezone
 from django.utils import timezone as tz
@@ -366,6 +367,17 @@ class CitaViewSet(viewsets.ModelViewSet):
             {'mensaje': f"No se puede cambiar el estado de '{estado_actual}' a '{nuevo_estado}'"},
             status=status.HTTP_400_BAD_REQUEST
         )
+    
+class CitaClienteViewSet(viewsets.ModelViewSet):
+    queryset = Cita.objects.all()
+    serializer_class = CitaClienteSerializer
+
+    def list(self, request, pk):
+        usuario = Usuario.objects.get(id=pk)
+        qs = Cita.objects.filter(usuario=usuario).order_by('-fecha_inicio')
+        serializer = CitaClienteSerializer(qs, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 # flake8: noqa: C901
 class ReportesView(APIView):
