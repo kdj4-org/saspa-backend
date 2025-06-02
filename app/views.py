@@ -393,6 +393,10 @@ class CitaClienteViewSet(viewsets.ModelViewSet):
         qs = qs.order_by('-fecha_inicio')
         serializer = CitaClienteSerializer(qs, many=True)
 
+        mostrar_futuras = request.GET.get('futuras')
+        if mostrar_futuras == '1':
+            qs = qs.filter(fecha_inicio__gte=tz.now())
+
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def create(self, request, pk):
