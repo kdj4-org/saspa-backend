@@ -374,9 +374,25 @@ class CitaClienteViewSet(viewsets.ModelViewSet):
 
     def list(self, request, pk):
         usuario = Usuario.objects.get(id=pk)
-        qs = Cita.objects.filter(usuario=usuario).order_by('-fecha_inicio')
+        qs = Cita.objects.filter(usuario=usuario)
+
+        periodo = request.GET.get('periodo')
+        if periodo:
+            hoy = tz.now()
+            if periodo == 'semana':
+                desde = hoy - timedelta(weeks=1)
+            elif periodo == 'mes':
+                desde = hoy - timedelta(days=30)
+            elif periodo == 'año':
+                desde = hoy - timedelta(days=365)
+            else:
+                return Response({"error": "Periodo inválido. Usa 'semana', 'mes' o 'año'."}, status=status.HTTP_400_BAD_REQUEST)
+
+            qs = qs.filter(fecha_inicio__gte=desde)
+
+        qs = qs.order_by('-fecha_inicio')
         serializer = CitaClienteSerializer(qs, many=True)
-        
+
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def create(self, request, pk):
