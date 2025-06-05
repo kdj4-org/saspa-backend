@@ -40,7 +40,8 @@ class RegisterUserView(APIView):
             payload = {
                 'id': user.id,
                 'email': user.email,
-                'username': user.rol,
+                'rol': user.rol,
+                'nombre': user.nombre,
                 "exp": datetime.now(timezone.utc) + timedelta(days=365*5),
                 "iat": datetime.now(timezone.utc)
             }
@@ -68,6 +69,7 @@ class LoginView(APIView):
                 "user_id": user.id,
                 "email": user.email,
                 "rol": user.rol,
+                "nombre": user.nombre,
                 "exp": datetime.now(timezone.utc) + timedelta(days=365*5),
                 "iat": datetime.now(timezone.utc)
             }
