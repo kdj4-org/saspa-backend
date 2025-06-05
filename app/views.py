@@ -400,14 +400,10 @@ class CitaClienteViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def create(self, request, pk):
-        data = request.data.copy()
-        data["estado"] = "por aprobar"
         try:
-            data["usuario"] = Usuario.objects.get(id=pk)
+            usuario = Usuario.objects.get(id=pk)
         except:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
 
         cita = request.data
         empleado = cita.get("empleado")
@@ -429,7 +425,10 @@ class CitaClienteViewSet(viewsets.ModelViewSet):
                     response = {"mensaje": "La cita se cruza con otra ya existente."}
                     return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-        self.perform_create(serializer)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save(usuario=usuario, estado="por aprobar")
         response = {"mensaje": "Cita creada correctamente."}
         return Response(response, status=status.HTTP_201_CREATED)
 
