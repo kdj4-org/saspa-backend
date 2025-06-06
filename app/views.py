@@ -299,10 +299,10 @@ class CitaViewSet(viewsets.ModelViewSet):
         dias_ingles_a_espanol = {
             'monday': 'lunes',
             'tuesday': 'martes',
-            'wednesday': 'miércoles',
+            'wednesday': 'miercoles',
             'thursday': 'jueves',
             'friday': 'viernes',
-            'saturday': 'sábado',
+            'saturday': 'sabado',
             'sunday': 'domingo'
         }
 
