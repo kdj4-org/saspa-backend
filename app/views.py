@@ -640,7 +640,7 @@ class BloqueoViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         empleado = Empleado.objects.filter(id=request.GET.get('empleado_id')).first()
         fecha = request.GET.get('fecha')
-        queryset = self.queryset
+        queryset = Bloqueo.objects.all()
 
         if empleado:
             queryset = queryset.filter(empleado=empleado)
