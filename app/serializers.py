@@ -6,6 +6,7 @@ from .models import (
 from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_extra_fields.fields import Base64ImageField
+import pytz
 
 User = get_user_model()
 
@@ -140,10 +141,12 @@ class CitaSerializer(serializers.ModelSerializer):
         ]
 
     def get_fecha(self, obj):
-        return obj.fecha_inicio.date().isoformat()
+        local_time = obj.fecha_inicio.astimezone(pytz.timezone('America/Bogota'))
+        return local_time.strftime('%Y-%m-%d')
 
     def get_hora(self, obj):
-        return obj.fecha_inicio.time().strftime('%H:%M')
+        local_time = obj.fecha_inicio.astimezone(pytz.timezone('America/Bogota'))
+        return local_time.strftime('%H:%M')
     
 class CitaClienteSerializer(serializers.ModelSerializer):
     estado = serializers.SerializerMethodField()
